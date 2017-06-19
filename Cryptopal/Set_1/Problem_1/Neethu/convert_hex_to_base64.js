@@ -4,13 +4,12 @@
 * 
 * Usage: node convert_hex_to_base64 <your_hex_string>  
 *
-*
 ******/
-
-
-var hex = process.argv[2];
+main()
 
 function main(){
+
+	var hex = process.argv[2];
 	var binary_string = "";
 
 	/*== iterate through hex string and find binary equivalent string */
@@ -46,9 +45,11 @@ function main(){
 
 
 
+
+
 /*** 
 *
-*	HEAVY RECURSIONS COMING UP!
+*	RECURSIONS COMING UP!
 *
 ***/
 
