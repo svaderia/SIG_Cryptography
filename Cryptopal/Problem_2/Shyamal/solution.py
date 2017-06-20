@@ -4,6 +4,7 @@
 
 
 def XOR(string1, string2):
+    if len(string1) != len(string2): return
     n1 = int(string1, 16)   # converted string into integer
     n2 = int(string2, 16)
     return hex(n1^n2)[2:]   # hex out puts '0x...' so did [2:], ^ is XOR operator
