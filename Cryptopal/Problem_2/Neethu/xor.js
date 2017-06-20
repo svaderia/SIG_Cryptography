@@ -7,7 +7,7 @@
 *
 *******/
 
-var helpers = require("./helper.js")  														// my module ! yay , no pollution :D
+var helpers = require("./helper.js")  								// my module ! yay , no pollution :D
 
 main()
 
@@ -32,7 +32,7 @@ var main = function(){
 	});
 
 	var result = "";
-	for(var i = 0; i < binary_array[0].length ; i++){										//XOR each byte and append to result
+	for(var i = 0; i < binary_array[0].length ; i++){					//XOR each byte and append to result
 		// console.log(typeof result)
 		var value = (+(binary_array[0][i]))^(+(binary_array[1][i])).toString();
 		// console.log(typeof value)
