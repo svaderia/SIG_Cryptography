@@ -11,6 +11,7 @@ def xor(a, b):
 	print(c)
 	c = codecs.decode(c, 'hex') #To check if the hex form of result has a meaning in raw form.
 	print(c)
+	return c
 
 def main():
 
