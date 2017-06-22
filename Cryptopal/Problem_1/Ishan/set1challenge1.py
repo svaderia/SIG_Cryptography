@@ -1,0 +1,1 @@
+print raw_input("input the string you want converted:").decode("hex").encode("base64")
