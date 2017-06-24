@@ -13,10 +13,10 @@ def hextoraw(s):
 	return binascii.unhexlify(s)
 
 def main():
-	hex = input()
-	b64 = hextobase64(hex)
+	hex_string = input()
+	b64 = hextobase64(hex_string)
 	b16 = base64tohex(b64)
-	raw = hextoraw(hex)
+	raw = hextoraw(hex_string)
 
 	print(b16)
 	print(b64)
