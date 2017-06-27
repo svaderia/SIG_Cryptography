@@ -7,9 +7,10 @@ import codecs
 def hex_base64_encode(hex_string):
     string = codecs.decode(hex_string,'hex')
     base64_string = codecs.encode(string, 'base64')
-    return base64_string
+    return str(base64_string)
 
 def hex_base64_decode(base64_string):
+    base64_string = bytes(base64_string, "utf-8")
     string = codecs.decode(base64_string, 'base64')
     hex_string = codecs.encode(string, 'hex')
-    return hex_string
+    return str(hex_string)
