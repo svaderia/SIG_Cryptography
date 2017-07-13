@@ -20,7 +20,7 @@ function xor_analysis(cipher){
 
 	/*= deciphering text and finding scores */
 
-	for(var i = 33; i< 127; i++){	// all readable keys in decimal
+	for(var i = 32; i< 127; i++){	// all readable keys in decimal
 
 		var key_unit = decimal_encode_hex(i);	
 		var key = "";
@@ -67,12 +67,13 @@ function score_frequency(array){
 
 	var score = 0;
 	for(i in array){
-		special_chars = "! , . ? : ; '".split(" ")
+		special_chars = "! , . ? : ; ' #".split(" ")
 		special_chars.push(" ");
+		special_chars.push('"');
 		special_chars.push("\"")
 		if((array[i].charCodeAt(0)<"a".charCodeAt(0) || array[i].charCodeAt(0)>"z".charCodeAt(0) )&& special_chars.indexOf(array[i]) == -1 )
 		{	
-			score-=2;
+			score-=1;
 		}
 		
 		if(most_frequent_chars.indexOf(array[i]) > -1){
