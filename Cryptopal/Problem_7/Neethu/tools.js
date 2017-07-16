@@ -7,7 +7,11 @@ module.exports = {
     'inverse_substitute_bytes': inverse_substitute_bytes,
     'split_string': split_string,
 }
+/******
 
+    a few table lookups (scroll down for the core functions)
+
+*******/
 
 /****
 *
@@ -203,14 +207,18 @@ let rcon = [
     0x61, 0xc2, 0x9f, 0x25, 0x4a, 0x94, 0x33, 0x66, 0xcc, 0x83, 0x1d, 0x3a, 0x74, 0xe8, 0xcb, 0x8d
 ]
 
+
+/*= function to lookup inverse s box table*/
 function get_inv(hex){
     return get_value(hex,'inverse-s-box')
 }
 
+/*= function to lookup s box table*/
 function get_s(hex){
     return get_value(hex, 's-box')
 }
 
+/*= function to look up the inverse-s-box and s-box tables*/
 function get_value(hex, box_name){
     hex = zero_pad(hex, 2);
     var low_digit = parseInt(hex[1],16),
@@ -225,45 +233,49 @@ function get_value(hex, box_name){
     }
 }
 
+/*= key expansion + inv mix cols for all the keys except first and last */
 function inverse_key_expansion(key){
     // console.log(key)
-    var words = split_string(key.toString(), 8);
+    var words = split_string(key.toString(), 8);        // each column is taken as a word (first 4 words are given by the original key)
     // console.log(words)
     for(var i = 4; i<44; i++){
-        var temp = words[i-1];
+        var temp = words[i-1];              // new word depends on the previous word
         // console.log(temp)
         // console.log('temp: ',temp)
         if(i%4==0){
-            temp = xor_hex(substitute_word(rotate_word(temp)),zero_pad_back(zero_pad(rcon[i/4].toString(16),2),8))
+            // starting col of each new block is rotated to the left, substituted with s-box and xor-ed with the corresponding rcon
+            temp = xor_hex(substitute_word(rotate_word(temp)),zero_pad_back(zero_pad(rcon[i/4].toString(16),2),8))       
             console.log('temp2: ',temp, i)
         }
         // console.log(temp)
         
         
-        words.push(xor_hex(temp, words[i-4]));
+        words.push(xor_hex(temp, words[i-4]));          // new word also depends on the word 4 places before it
         // console.log('{words[',i,']: ',words[i].length,'}')
     }
 
-    var key_strings = split_string(words.join(''),32);
+    var key_strings = split_string(words.join(''),32);  
     var keys = [];
     for(var i =0; i< key_strings.length; i++){
-        keys.push(new Matrix(key_strings[i], 4, 4))
+        keys.push(new Matrix(key_strings[i], 4, 4))         // keys are made into col major 2d matrices from words
     }
     // console.log('keys: ',keys)
-    keys.forEach(function(ele,i){
-        console.log(split_string(ele.toString(),2).join(' '))
-    })
+    // keys.forEach(function(ele,i){
+    //     console.log(split_string(ele.toString(),2).join(' '))
+    // })
     for(var i=1; i<10; i++){
-        keys[i] = inverse_mix_columns(keys[i])
+        keys[i] = inverse_mix_columns(keys[i])              // inverse mix cols for all keys except first and last
     }  
     return keys
 }
 
+/*= rotate word string to the left */
 function rotate_word(hex){
     // console.log('{rotate_word : \n hex: ',hex, '\n final : ',hex.slice(2) + hex.slice(0,2),'}')
     return hex.slice(2) + hex.slice(0,2)
 }
 
+/*= substitute word with s-box */
 function substitute_word(hex){
     var elements = split_string(hex, 2);
 
@@ -275,12 +287,14 @@ function substitute_word(hex){
     return new_elements.join('');
 }
 
+/*= xor state and key*/
 function add_round_key(state, key){
     // console.log(key)
     // console.log(key)
     return state.xor(key);
 }
 
+/* shift rows to the left in 2d matrix */
 function inverse_shift_rows(state){
     //console.log(state)
     // console.log(state)
@@ -296,6 +310,8 @@ function inverse_shift_rows(state){
     return state;
 }
 
+
+/*= substitute words with inverse s-box */
 function inverse_substitute_bytes(state){
     for(var i =0; i< 4; i++){
         for(var j=0; j<4; j++){
@@ -306,6 +322,7 @@ function inverse_substitute_bytes(state){
     return state;
 }
 
+/*= inverse mix columns (table look ups ) and xors*/
 function inverse_mix_columns(state){
     // console.log(state)
     for(var j = 0; j< 4; j++){
@@ -326,6 +343,14 @@ function inverse_mix_columns(state){
     }
     return state;
 }
+
+/****
+*
+*
+*   constructor for matrix and its functions
+*
+******/
+
 
 function Matrix(string, rows, cols){
     if(string.length==0){
@@ -363,6 +388,13 @@ Matrix.prototype.xor = function(other) {
     return (new Matrix(xor_hex_string, this.rows, this.cols));
 };
 
+Matrix.prototype.copy = function() {
+    return (new Matrix(this.toString(), this.rows, this.cols));
+};
+
+
+
+/*= pad zero in the front*/
 function zero_pad(string, length){
     if(string.length>=length){
         return string;
@@ -370,15 +402,13 @@ function zero_pad(string, length){
     return zero_pad('0'+string, length)
 }
 
-Matrix.prototype.copy = function() {
-    return (new Matrix(this.toString(), this.rows, this.cols));
-};
-
+/*= split string to blocks of specified length */
 function split_string(string , size){
     var regex = new RegExp("(.|[\r\n]){1,"+size+"}",'g');
     return string.match(regex);
 }
 
+/* xor 2 hex strings */
 function xor_hex(hex1,hex2){
     var xored_string = '';
     hex1.split('').map(function(ele, i){
@@ -389,6 +419,7 @@ function xor_hex(hex1,hex2){
     return xored_string
 }
 
+/* pad zero in the back */
 function zero_pad_back(string, length){
     if(string.length>=length){
         return string;
