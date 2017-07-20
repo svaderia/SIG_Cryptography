@@ -1,12 +1,20 @@
-var fs = require('fs');
-var split_stream = require('split');
-var Transform = require('stream').Transform;
-var util = require('util');
+/***
+*
+*	requirements : node, split, stream
+*
+*	usage: node script.js
+****/
 
-util.inherits(ProcessLine, Transform);
+var fs = require('fs');			//file system
+var split_stream = require('split');		// to split input into lines
+var Transform = require('stream').Transform;	// the readable and writable stream
+var util = require('util');				// utilities
+
+/*= inheritance */
+util.inherits(ProcessLine, Transform);			
 util.inherits(EvaluateResult, Transform);
 
-var file = fs.createReadStream('./input.txt');
+var file = fs.createReadStream('./input.txt'); // input from input.txt
 
 var data = []
 
@@ -14,30 +22,37 @@ file.on('error', function(){
 	console.log('err');
 })
 // console.log(Transform.super_.super_.super_.super_.init())
+
 console.log("It'll take a few mins ...")
+
+/*= piping diffrent streams */
 file.pipe(split_stream()).pipe(new ProcessLine).pipe(new EvaluateResult).on('finish', function(){
-	var sorted = data.sort(function(a,b){
+	var sorted = data.sort(function(a,b){								// sorting the data in descending
 		return b[1] - a[1];
 	})
 	var str = '';
 	str += 'The line encoded with ecb is : line no '+ sorted[0][0];
 	str += '\ntop 10 finalist lines :\n[<line_no>, <eligibility>]\n';
 	str += sorted.slice(0,10).join('\n');
-	fs.writeFile('./output.txt', str, function(){
+	fs.writeFile('./output.txt', str, function(){						//	write into output.txt
 		console.log(str);
 	})
 })
+
+/* basic function declarations*/
 function ProcessLine(){
-	Transform.call(this, {'objectMode':true})
+	Transform.call(this, {'objectMode':true}) //calling parent constructor
 	this.line = 0;
 }
 function EvaluateResult(){
 	Transform.call(this, {'objectMode':true})
 }
 
+/*= find hamming distance between text at diffrent offsets and lengths between each block of a string*/
 ProcessLine.prototype._transform = function(line, encoding, processed){
-	var blocks = line.split_string(32);
+	var blocks = line.split_string(32);					// getting into blocks of length 32 hex
 	var distances = [];
+	
 	for(var i=0; i<blocks.length-1; i++){
 		for(var j=i+1; j< blocks.length; j++){
 			var len = 3;
@@ -53,12 +68,12 @@ ProcessLine.prototype._transform = function(line, encoding, processed){
 
 	}
 	this.line++;
-	this.push({line: this.line, info: distances});
+	this.push({line: this.line, info: distances});		//sending data to the next stream
 	
 	processed();
 }
 
-
+/*= eligibility criteria is the total number of zero hamming distances . (In ecb mode , same text produces same cipher. So, assuming repetion in text, ecb should produce a high number of zeros) */
 EvaluateResult.prototype._transform = function(object, encoding, processed){
 	var count_zeros = 0;
 	object.info.forEach(function(row){
@@ -85,15 +100,7 @@ function zero_pad(string, length){
     return zero_pad('0'+string, length)
 }
 
-// function hex_binary(hex_string){
-// 	var bin_length = hex_string.length*4;
-// 	var bin = parseInt(hex_string, 16).toString(2);
-// 	if(bin_length> bin.length){
-// 		return zero_pad(bin, bin_length)
-// 	}
-// 	return bin;
-// }
-
+/*= function to find hamming distance */
 function hamming_distance(hex1, hex2){
 	var xor = xor_hex(hex1, hex2)
 	
@@ -104,6 +111,7 @@ function hamming_distance(hex1, hex2){
 	return count;
 }
 
+/*= xor hex strings*/
 function xor_hex(hex1, hex2){
 	if(hex1.length != hex2.length){
 		console.log('strings should be of the same length')
